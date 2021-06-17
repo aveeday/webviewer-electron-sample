@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 let id = 'viewer';
+let instance = null;
 
 const viewerElement = document.getElementById(id);
 
@@ -24,72 +25,69 @@ newViewerBtn.onclick = () => {
   init(newViewer);
 };
 
-function init(viewerElement) {
-  WebViewer(
+openFileBtn.onclick = async () => {
+  const file = await dialog.showOpenDialog({
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      { name: 'Documents', extensions: ['pdf', 'docx', 'pptx', 'xlsx'] },
+      { name: 'Images', extensions: ['png', 'jpg'] },
+    ],
+  });
+
+  if (!file.canceled) {
+    instance.loadDocument(file.filePaths[0]);
+  }
+};
+
+saveFileBtn.onclick = async () => {
+  const file = await dialog.showOpenDialog({
+    title: 'Select where you want to save the PDF',
+    buttonLabel: 'Save',
+    filters: [
+      {
+        name: 'PDF',
+        extensions: ['pdf'],
+      },
+    ],
+    properties: ['openDirectory'],
+  });
+
+  if (!file.canceled) {
+    const doc = instance.docViewer.getDocument();
+    const xfdfString = await instance.annotManager.exportAnnotations();
+    const data = await doc.getFileData({
+      // saves the document with annotations in it
+      xfdfString,
+    });
+    const arr = new Uint8Array(data);
+
+    fs.writeFile(
+      `${file.filePaths[0].toString()}/annotated.pdf`,
+      arr,
+      function (err) {
+        if (err) throw err;
+        console.log('Saved!');
+      },
+    );
+  }
+};
+
+closeFileBtn.onclick = () => {
+  instance.closeDocument().then(function () {
+    console.log('Document is closed');
+  });
+};
+
+async function init(viewerElement) {
+  instance = await WebViewer(
     {
       path: '../public/lib',
       initialDoc: '../public/files/webviewer-demo-annotated.pdf',
     },
     viewerElement,
-  ).then(instance => {
-    // Interact with APIs here.
-    // See https://www.pdftron.com/documentation/web for more info
-    instance.setTheme('dark');
-    instance.disableElements(['downloadButton']);
-
-    const { docViewer, annotManager } = instance;
-
-    openFileBtn.onclick = async () => {
-      const file = await dialog.showOpenDialog({
-        properties: ['openFile', 'multiSelections'],
-        filters: [
-          { name: 'Documents', extensions: ['pdf', 'docx', 'pptx', 'xlsx'] },
-          { name: 'Images', extensions: ['png', 'jpg'] },
-        ],
-      });
-
-      if (!file.canceled) {
-        instance.loadDocument(file.filePaths[0]);
-      }
-    };
-
-    saveFileBtn.onclick = async () => {
-      const file = await dialog.showOpenDialog({
-        title: 'Select where you want to save the PDF',
-        buttonLabel: 'Save',
-        filters: [
-          {
-            name: 'PDF',
-            extensions: ['pdf'],
-          },
-        ],
-        properties: ['openDirectory'],
-      });
-
-      if (!file.canceled) {
-        const doc = docViewer.getDocument();
-        const xfdfString = await annotManager.exportAnnotations();
-        const data = await doc.getFileData({
-          // saves the document with annotations in it
-          xfdfString,
-        });
-        const arr = new Uint8Array(data);
-
-        fs.writeFile(
-          `${file.filePaths[0].toString()}/annotated.pdf`,
-          arr,
-          function (err) {
-            if (err) throw err;
-            console.log('Saved!');
-          },
-        );
-      }
-    };
-
-    closeFileBtn.onclick = () => {
-      instance.closeDocument().then(function () {
-        console.log('Document is closed');
-      });
-    };
-  });
+  );
+  // Interact with APIs here.
+  // See https://www.pdftron.com/documentation/web for more info
+  instance.setTheme('dark');
+  instance.disableElements(['downloadButton']);
 }
