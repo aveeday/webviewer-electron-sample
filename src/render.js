@@ -53,19 +53,34 @@ saveFileBtn.onclick = async () => {
   });
 
   if (!file.canceled) {
+    console.time('saving');
+    console.time('getDocument');
     const doc = instance.docViewer.getDocument();
+    console.timeEnd('getDocument');
+
+    console.time('exportAnnotations');
     const xfdfString = await instance.annotManager.exportAnnotations();
+    console.timeEnd('exportAnnotations');
+
+    console.time('getFileData');
     const data = await doc.getFileData({
       // saves the document with annotations in it
       xfdfString,
     });
-    const arr = new Uint8Array(data);
+    console.timeEnd('getFileData');
 
+    console.time('Uint8Array');
+    const arr = new Uint8Array(data);
+    console.timeEnd('Uint8Array');
+
+    console.time('writeFile');
     fs.writeFile(
       `${file.filePaths[0].toString()}/annotated.pdf`,
       arr,
       function (err) {
         if (err) throw err;
+        console.timeEnd('writeFile');
+        console.timeEnd('saving');
         console.log('Saved!');
       },
     );
