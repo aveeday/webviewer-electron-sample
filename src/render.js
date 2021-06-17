@@ -1,32 +1,33 @@
-const { dialog } = require("electron").remote;
-const path = require("path");
-const fs = require("fs");
+const { dialog } = require('electron').remote;
+const path = require('path');
+const fs = require('fs');
 
-const viewerElement = document.getElementById("viewer");
+const viewerElement = document.getElementById('viewer');
 
-const openFileBtn = document.getElementById("open");
-const saveFileBtn = document.getElementById("save");
+const openFileBtn = document.getElementById('open');
+const saveFileBtn = document.getElementById('save');
+const closeFileBtn = document.getElementById('close');
 
 WebViewer(
   {
-    path: "../public/lib",
-    initialDoc: "../public/files/webviewer-demo-annotated.pdf",
+    path: '../public/lib',
+    initialDoc: '../public/files/webviewer-demo-annotated.pdf',
   },
-  viewerElement
-).then((instance) => {
+  viewerElement,
+).then(instance => {
   // Interact with APIs here.
   // See https://www.pdftron.com/documentation/web for more info
-  instance.setTheme("dark");
+  instance.setTheme('dark');
   instance.disableElements(['downloadButton']);
 
   const { docViewer, annotManager } = instance;
 
   openFileBtn.onclick = async () => {
     const file = await dialog.showOpenDialog({
-      properties: ["openFile", "multiSelections"],
+      properties: ['openFile', 'multiSelections'],
       filters: [
-        { name: "Documents", extensions: ["pdf", "docx", "pptx", "xlsx"] },
-        { name: "Images", extensions: ["png", "jpg"] },
+        { name: 'Documents', extensions: ['pdf', 'docx', 'pptx', 'xlsx'] },
+        { name: 'Images', extensions: ['png', 'jpg'] },
       ],
     });
 
@@ -37,15 +38,15 @@ WebViewer(
 
   saveFileBtn.onclick = async () => {
     const file = await dialog.showOpenDialog({
-      title: "Select where you want to save the PDF",
-      buttonLabel: "Save",
+      title: 'Select where you want to save the PDF',
+      buttonLabel: 'Save',
       filters: [
         {
-          name: "PDF",
-          extensions: ["pdf"],
+          name: 'PDF',
+          extensions: ['pdf'],
         },
       ],
-      properties: ["openDirectory"],
+      properties: ['openDirectory'],
     });
 
     if (!file.canceled) {
@@ -56,15 +57,21 @@ WebViewer(
         xfdfString,
       });
       const arr = new Uint8Array(data);
-      
+
       fs.writeFile(
         `${file.filePaths[0].toString()}/annotated.pdf`,
         arr,
         function (err) {
           if (err) throw err;
-          console.log("Saved!");
-        }
+          console.log('Saved!');
+        },
       );
     }
+  };
+
+  closeFileBtn.onclick = () => {
+    instance.closeDocument().then(function () {
+      console.log('Document is closed');
+    });
   };
 });
