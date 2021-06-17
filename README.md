@@ -1,12 +1,21 @@
 # WebViewer - Electron sample
 
-[WebViewer](https://www.pdftron.com/documentation/web/) is a powerful JavaScript-based PDF Library that's part of the [PDFTron PDF SDK](https://www.pdftron.com). It provides a slick out-of-the-box responsive UI that interacts with the core library to view, annotate and manipulate PDFs that can be embedded into any web project.
+## Issues
 
-Watch [a step-by-step video](https://www.youtube.com/watch?v=FyZ40lNE-pY) overview of this project.
+### Memory leak
 
-![WebViewer UI](https://www.pdftron.com/downloads/pl/webviewer-ui.png)
+https://youtu.be/97pVZJ_SqiE
 
-This repo is specifically designed for any users interested in integrating WebViewer into an Electron project.
+memory is not freed when re-creating an webviewer instance
+
+### Slow saving
+
+https://youtu.be/b_IMQn97coE
+
+~4 MB example document:
+https://docs.aws.amazon.com/codebuild/latest/userguide/codebuild-user.pdf
+
+saving time: 68 s
 
 ## Initial setup
 
