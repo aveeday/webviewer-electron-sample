@@ -1,5 +1,15 @@
-const { app, BrowserWindow, Menu } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain } = require("electron");
 const path = require("path");
+const log = require('electron-log');
+
+log.debug('app started');
+
+log.debug(`process.argv = ${JSON.stringify(process.argv)}`);
+
+ipcMain.handle('getInitialFilePath', async () => {
+  const file = process.argv[1];
+  return file
+})
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -22,7 +32,7 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, "index.html"));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished

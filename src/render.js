@@ -1,3 +1,4 @@
+const { ipcRenderer } = require("electron")
 const { dialog } = require("electron").remote;
 const path = require("path");
 const fs = require("fs");
@@ -7,13 +8,17 @@ const viewerElement = document.getElementById("viewer");
 const openFileBtn = document.getElementById("open");
 const saveFileBtn = document.getElementById("save");
 
+const filePathPromise = ipcRenderer.invoke('getInitialFilePath')
+
 WebViewer(
   {
     path: "../public/lib",
-    initialDoc: "../public/files/webviewer-demo-annotated.pdf",
   },
   viewerElement
-).then((instance) => {
+).then(async (instance) => {
+  const initialDoc = "../../../public/files/webviewer-demo-annotated.pdf";
+  const filePath = await filePathPromise || initialDoc;
+  instance.loadDocument(filePath)
   // Interact with APIs here.
   // See https://www.pdftron.com/documentation/web for more info
   instance.setTheme("dark");

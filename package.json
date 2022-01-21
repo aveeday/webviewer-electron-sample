@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@pdftron/webviewer": "^8.0.0",
+    "electron-log": "^4.4.5",
     "electron-squirrel-startup": "^1.0.0"
   }
 }
