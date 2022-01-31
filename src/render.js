@@ -10,14 +10,34 @@ const saveFileBtn = document.getElementById("save");
 
 const filePathPromise = ipcRenderer.invoke('getInitialFilePath')
 
-WebViewer(
-  {
-    path: "../public/lib",
-  },
-  viewerElement
-).then(async (instance) => {
+Promise.resolve().then(async() => {
+  const workerHandlers = {};
+  const licenseKey = ''
+  const pdfType = await Core.getDefaultBackendType();
+
+  Core.setWorkerPath('../public/lib/core');
+  await Core.PDFNet.initialize(licenseKey);
+
+  return {
+    pdf: Core.initPDFWorkerTransports(
+      pdfType,
+      workerHandlers,
+      licenseKey,
+    ),
+  }
+}).then(workerTransportPromise => {
+  return WebViewer(
+    {
+      path: "../public/lib",
+      fullAPI: true,
+      workerTransportPromise,
+    },
+    viewerElement
+  )
+}).then(async (instance) => {
+  instance.Core.syncNamespaces({ PDFNet: Core.PDFNet });
   const initialDoc = "../../../public/files/webviewer-demo-annotated.pdf";
-  const filePath = await filePathPromise || initialDoc;
+  const filePath = await filePathPromise.then(r => r !== '.' ? r : null) || initialDoc;
   instance.loadDocument(filePath)
   // Interact with APIs here.
   // See https://www.pdftron.com/documentation/web for more info
